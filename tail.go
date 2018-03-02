@@ -26,16 +26,21 @@ func (t *Tail) String() string {
 	return fmt.Sprintf("&Tail{Filename:%s}", t.Filename)
 }
 
+func TailFile(filepath string, buffersize int) (*Tail, error) {
+	return TailFileCustom([]string{"-c", "+1", "-f"}, filepath, buffersize)
+}
+
 // begins tailing a linux file. Output stream is
 // made available through `Tail.Lines` channel
-func TailFile(filepath string, buffersize int) (*Tail, error) {
+func TailFileCustom(params []string, filepath string, buffersize int) (*Tail, error) {
 	// check whether the file exists
 	_, err := os.Stat(filepath)
 	if err != nil {
 		return nil, err
 	}
 
-	cmd := exec.Command("tail", "-c", "+1", "-f", filepath)
+	params = append(params, filepath)
+	cmd := exec.Command("tail", params...)
 	reader, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err
